@@ -17,7 +17,7 @@ from sklearn.ensemble import RandomForestClassifier
 
 #Configurações de página
 st.set_page_config(
-         page_title="Análise Canais de Atendimento",
+         page_title="ML Web App",
          page_icon="🏛",
          layout="wide", #Outras opções: centered
          initial_sidebar_state="expanded", #Outras opções [auto, collapsed]
@@ -96,20 +96,18 @@ if exibir_eda:
 X = carrega_dados()[0].data
 y= carrega_dados()[0].target
 
+st.sidebar.title("Treinamento")
+form_modelo = st.sidebar.form(key = 'modelos')
+modelos_sel = form_modelo.multiselect("Modelos a serem treinados", ['RandomForest', 'Regressão Logística', 'SVM', 'KNN'])
+nr_quebras = form_modelo.slider("Nr de folds",2, 10, 5, step=1)
+percentual_validacao = form_modelo.slider("Percentual de validação", 0.1, 0.5, 0.2, step = 0.05)
+X_treino, X_validacao, y_treino, y_validacao = train_test_split(X, y, test_size=percentual_validacao)
+treinar = form_modelo.form_submit_button("Treinar modelos!")
 
 lista_modelos = {'RandomForest': RandomForestClassifier(),
                  'Regressão Logística': LogisticRegression(),
                  'SVM': SVC(),
                  'KNN': KNeighborsClassifier()}
-
-
-st.sidebar.title("Treinamento")
-form_modelo = st.sidebar.form(key = 'modelos')
-modelos_sel = form_modelo.multiselect("Modelos a serem treinados", ['RandomForest', 'Regressão Logística', 'SVM', 'KNN'])
-nr_quebras = form_modelo.slider("Nr de folds",2, 10, 5, step=1)
-percentual_validacao = form_modelo.slider("Percentual de teste", 0.1, 0.5, 0.2, step = 0.05)
-X_treino, X_validacao, y_treino, y_validacao = train_test_split(X, y, test_size=percentual_validacao)
-treinar = form_modelo.form_submit_button("Treinar modelos!")
 
 @st.cache
 def treinamento(modelos_sel, lista_modelos, nr_quebras, X_treino, y_treino):
@@ -121,8 +119,6 @@ def treinamento(modelos_sel, lista_modelos, nr_quebras, X_treino, y_treino):
         resultados[modelo] = [resultado_cv.mean(), resultado_cv.std()]
 
     return pd.DataFrame.from_dict(data=resultados, orient='index', columns=['Média', 'Desvio_Padrão'])
-
-df_res = pd.DataFrame()
 
 if treinar:
     #treinamento(modelos_sel, lista_modelos, nr_quebras, X_treino, y_treino)
@@ -145,7 +141,6 @@ def validacao(modelos_validar):
         precisao_validacao = precision_score(y_validacao, predicoes, average=None)
         recall_validacao = recall_score(y_validacao, predicoes, average=None)
         matriz_conf_validacao = confusion_matrix(y_validacao, predicoes)
-        #relatorio_validacao = classification_report(y_validacao, predicoes, output_dict=True)
         resultados_v.append([acuracia_validacao, precisao_validacao,recall_validacao, matriz_conf_validacao,nome_modelo_v])
 
     return resultados_v
@@ -154,8 +149,8 @@ if validar:
     #validacao(modelos_validar)
     st.title("Resultados do Treinamento - Acurácia dos Modelos")
     st.table(treinamento(modelos_sel, lista_modelos, nr_quebras, X_treino, y_treino))
-    r = validacao(modelos_validar)
-    for i in r:
+    rv = validacao(modelos_validar)
+    for i in rv:
         st.title(i[4])
         acr, prc, rcl, mcf = st.beta_columns(4)
         acr.header("Acurácia")
