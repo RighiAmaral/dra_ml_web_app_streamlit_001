@@ -21,7 +21,7 @@ st.set_page_config(
          page_title="ML Web App",
          page_icon="🏛",
          layout="wide", #Outras opções: centered
-         initial_sidebar_state="expanded", #Outras opções [auto, collapsed]
+         #initial_sidebar_state="expanded", #Outras opções [auto, collapsed]
      )
 
 #carregando os dados e transformando-os em um pandas datframe
@@ -155,7 +155,7 @@ if validar:
         st.title(i[4])
         acr, prc, rcl, mcf = st.beta_columns(4)
         acr.header("Acurácia")
-        acr.write(i[0])
+        acr.write('{:.2f}'.format(i[0]))
         prc.header("Precisão")
         prc.write(i[1])
         rcl.header("Recall")
